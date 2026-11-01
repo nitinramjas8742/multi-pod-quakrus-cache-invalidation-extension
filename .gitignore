@@ -1,0 +1,25 @@
+# Build output
+.gradle/
+build/
+out/
+bin/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local secrets
+.env
+
+# Extracted bundles under dist (the .zip files themselves are tracked)
+dist/*/

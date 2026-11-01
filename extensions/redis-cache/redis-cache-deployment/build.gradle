@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group = 'com.example'
+version = '1.1.1'
+base.archivesName = 'redis-cache-deployment'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform('io.quarkus.platform:quarkus-bom:3.37.0')
+    implementation project(':extensions:redis-cache:redis-cache-runtime')
+    implementation 'io.quarkus:quarkus-core-deployment'
+    implementation 'io.quarkus:quarkus-hibernate-orm-deployment'
+    implementation 'io.quarkus:quarkus-redis-client-deployment'
+
+    // Generates META-INF/quarkus-build-steps.list. Without this the
+    // deployment module is just a plain jar and Quarkus never discovers
+    // RedisCacheProcessor.
+    annotationProcessor platform('io.quarkus.platform:quarkus-bom:3.37.0')
+    annotationProcessor 'io.quarkus:quarkus-extension-processor'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'redis-cache-deployment'
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = 'extensionRepo'
+            url = rootProject.uri('build/extension-repo')
+        }
+    }
+}

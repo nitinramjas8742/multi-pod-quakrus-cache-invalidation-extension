@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'io.quarkus' version '3.37.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation enforcedPlatform('io.quarkus.platform:quarkus-bom:3.37.0')
+    implementation 'io.quarkus:quarkus-hibernate-orm'
+    implementation 'io.quarkus:quarkus-hibernate-orm-panache'
+    implementation 'io.quarkus:quarkus-jdbc-postgresql'
+    implementation 'io.quarkus:quarkus-rest-jackson'
+    implementation 'io.quarkus:quarkus-redis-client'
+    implementation project(':extensions:redis-cache:redis-cache-runtime')
+//    implementation 'io.debezium:debezium-quarkus-hibernate-cache:3.7.0.Final'
+//    implementation 'io.debezium.quarkus:debezium-quarkus-postgres:3.7.0.Final'
+}
+
+group = 'com.example'
+version = '1.0.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+// Creates a self-contained Maven repository under build/extension-repo that
+// other projects can consume without publishing to Maven Central/Local.
+tasks.register('publishExtensionToRepo') {
+    group = 'publishing'
+    description = 'Publishes the Redis L2 cache extension to build/extension-repo.'
+    dependsOn ':extensions:redis-cache:redis-cache-runtime:publishMavenPublicationToExtensionRepoRepository'
+    dependsOn ':extensions:redis-cache:redis-cache-deployment:publishMavenPublicationToExtensionRepoRepository'
+}
+
+// Zips the repository so it can be copied into another project or a shared drive.
+tasks.register('bundleExtensionRepo', Zip) {
+    group = 'publishing'
+    description = 'Builds a drop-in zip of the extension Maven repository.'
+    dependsOn 'publishExtensionToRepo'
+    from layout.buildDirectory.dir('extension-repo')
+    archiveFileName = "redis-l2-cache-extension-repo-${project(':extensions:redis-cache:redis-cache-runtime').version}.zip"
+    destinationDirectory = layout.buildDirectory.dir('dist')
+}
